@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Button } from "@/components/ui/button";
+import { BulkActionsBar } from "@/features/leads/components/bulk-actions-bar";
 import { LeadDrawer } from "@/features/leads/components/lead-drawer";
 import { LeadsFilters } from "@/features/leads/components/leads-filters";
 import { LeadsTable } from "@/features/leads/components/leads-table";
@@ -75,6 +76,7 @@ function LeadsWorkspace() {
       <LeadsFilters />
       {content}
       <LeadDrawer id={params.lead} onClose={() => setParams({ lead: null })} />
+      <BulkActionsBar ids={Object.keys(selection)} onDone={() => setSelection({})} />
     </>
   );
 }
