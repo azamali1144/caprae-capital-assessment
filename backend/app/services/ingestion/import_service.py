@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,17 +31,11 @@ async def _persist(
     job = await jobs.create(
         source=source,
         filename=filename,
-        status="running",
+        status="queued",
         total_rows=len(leads),
         duplicates_removed=removed,
-        started_at=datetime.now(UTC),
     )
     await companies.bulk_upsert(unique, job.id, source)
-
-    # enrichment isn't wired yet - for now the job is done once rows are saved
-    job.processed = len(unique)
-    job.status = "completed"
-    job.finished_at = datetime.now(UTC)
     await session.commit()
     await session.refresh(job)
     return job
