@@ -51,6 +51,9 @@ def test_deobfuscate():
         "noreply@acme.com",
         "you@example.com",
         "someone@otherbusiness.com",
+        "test@gmail.com",
+        "john.doe@acme.com",
+        "youremail@acme.com",
     ],
 )
 def test_junk_emails_filtered(junk):

@@ -20,7 +20,30 @@ _JUNK_DOMAINS = (
     "yourdomain.com",
     "godaddy.com",
 )
-_JUNK_LOCAL = ("noreply", "no-reply", "donotreply", "user", "name", "email", "yourname")
+# placeholders from form templates / theme demos - "test@gmail.com" showed up on a real hvac site
+_JUNK_LOCAL = {
+    "noreply",
+    "no-reply",
+    "donotreply",
+    "user",
+    "name",
+    "email",
+    "yourname",
+    "your.name",
+    "yourmail",
+    "youremail",
+    "test",
+    "testing",
+    "example",
+    "someone",
+    "johndoe",
+    "john.doe",
+    "janedoe",
+    "jane.doe",
+    "firstname",
+    "first.last",
+    "firstname.lastname",
+}
 
 # personal addresses on these are fine - small shops use gmail all the time
 FREE_PROVIDERS = {
