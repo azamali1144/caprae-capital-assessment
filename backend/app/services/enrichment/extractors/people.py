@@ -32,6 +32,57 @@ NAME_THEN_TITLE = re.compile(rf"({_NAME})\s*(?:,|-|–|\||\()\s*({_QUALIFIER}(?i
 TITLE_THEN_NAME = re.compile(rf"\b({_QUALIFIER}(?i:{_TITLE}))\s*(?::|,|-|–)?\s+({_NAME})")
 
 _STOPWORDS = {"Contact", "About", "Our", "The", "Meet", "Call", "Email", "Team", "Home", "Us"}
+# nav/button words that look like names when capitalised ("Search Extended, Director")
+_UI_WORDS = {
+    "Search",
+    "Extended",
+    "Read",
+    "More",
+    "Learn",
+    "Sign",
+    "Login",
+    "Log",
+    "Get",
+    "Started",
+    "Free",
+    "Book",
+    "Demo",
+    "Download",
+    "News",
+    "Blog",
+    "Events",
+    "Donate",
+    "Board",
+    "Directors",
+    "Advisory",
+    "Privacy",
+    "Policy",
+    "Terms",
+    "Services",
+    "Careers",
+    "Menu",
+    "View",
+    "Latest",
+    # function words that start marketing copy ("With Akron...", "You Can Rely...")
+    "With",
+    "You",
+    "Your",
+    "We",
+    "Can",
+    "Rely",
+    "For",
+    "And",
+    "From",
+    "Estimating",
+}
+_TITLE_WORDS = {w for t in DECISION_TITLES + OTHER_TITLES for w in t.split()}
+
+
+def _looks_like_name_word(w: str) -> bool:
+    if w in _STOPWORDS or w in _UI_WORDS or w.lower() in _TITLE_WORDS:
+        return False
+    # "LEED AP", "HVAC" - acronyms, not names (single initials like "J." are fine)
+    return not (len(w) > 2 and w.isupper())
 
 
 def _clean_name(name: str) -> str | None:
@@ -39,7 +90,7 @@ def _clean_name(name: str) -> str | None:
     # drop stray nav words that got glued to the front ("Meet John Smith")
     while words and words[0] in _STOPWORDS:
         words = words[1:]
-    if len(words) < 2 or any(w in _STOPWORDS for w in words):
+    if len(words) < 2 or not all(_looks_like_name_word(w) for w in words):
         return None
     return " ".join(words)
 

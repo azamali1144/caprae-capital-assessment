@@ -96,3 +96,31 @@ async def test_people(about_ctx):
 
 def test_people_ignores_nav_words():
     assert find_people("Contact Us, Owner") == []
+
+
+def test_people_ignores_ui_labels():
+    # seen on a real site: a search widget label sitting next to a title
+    assert find_people("Search Extended - Executive Director") == []
+    assert find_people("Executive Director: Search Extended") == []
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Dale Smith, LEED AP - Principal",
+        "With Akron - Partner",
+        "You Can Rely - Partner",
+        "Estimating Manager - President",
+    ],
+)
+def test_people_rejects_marketing_copy(text):
+    names = [p["full_name"] for p in find_people(text)]
+    assert not any(
+        n in ("LEED AP", "With Akron", "You Can Rely", "Estimating Manager") for n in names
+    )
+
+
+def test_real_names_still_work():
+    people = find_people("John H. Langer - President")
+    assert people[0]["full_name"] == "John H. Langer"
+    assert people[0]["is_decision_maker"]
