@@ -8,11 +8,13 @@ from app.core.cache import close_redis
 from app.core.config import get_settings
 from app.core.db import engine
 from app.core.errors import register_error_handlers
+from app.services.enrichment.service import close_pipeline
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     yield
+    await close_pipeline()
     await close_redis()
     await engine.dispose()
 
