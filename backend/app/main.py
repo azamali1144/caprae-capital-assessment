@@ -7,6 +7,7 @@ from app.api.v1.router import api_router
 from app.core.cache import close_redis
 from app.core.config import get_settings
 from app.core.db import engine
+from app.core.errors import register_error_handlers
 
 
 @asynccontextmanager
@@ -28,6 +29,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    register_error_handlers(app)
     app.include_router(api_router, prefix=settings.api_prefix)
 
     @app.get("/", include_in_schema=False)
