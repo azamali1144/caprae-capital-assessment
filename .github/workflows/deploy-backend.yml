@@ -1,0 +1,50 @@
+name: deploy backend
+
+# builds the api image and ships it to cloud run.
+# does nothing until the GCP_* repo variables are set (see docs/deployment.md)
+on:
+  push:
+    branches: [main]
+    paths: ["backend/**"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: ${{ vars.GCP_PROJECT_ID != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # workload identity federation, no json keys in secrets
+
+    env:
+      REGION: ${{ vars.GCP_REGION || 'us-central1' }}
+      IMAGE: ${{ vars.GCP_REGION || 'us-central1' }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/leadlens/api:${{ github.sha }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build + push image
+        working-directory: backend
+        run: |
+          gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy leadlens-api \
+            --image "$IMAGE" \
+            --region "$REGION" \
+            --allow-unauthenticated \
+            --no-cpu-throttling \
+            --min-instances 0 --max-instances 3 \
+            --memory 1Gi \
+            --set-env-vars "CORS_ORIGINS=${{ vars.FRONTEND_ORIGIN }}" \
+            --set-secrets "DATABASE_URL=leadlens-database-url:latest,REDIS_URL=leadlens-redis-url:latest"
