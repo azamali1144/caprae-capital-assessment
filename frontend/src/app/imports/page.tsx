@@ -8,6 +8,8 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DomainPaste } from "@/features/imports/components/domain-paste";
+import { JobProgress } from "@/features/imports/components/job-progress";
+import { RecentImports } from "@/features/imports/components/recent-imports";
 import { UploadDropzone } from "@/features/imports/components/upload-dropzone";
 import { useCreateImport } from "@/features/imports/hooks";
 
@@ -19,9 +21,6 @@ export default function ImportsPage() {
     createImport.mutate(input, {
       onSuccess: (res) => {
         setActive({ id: res.job_id, warnings: res.warnings });
-        toast.success("Import started", {
-          description: `${res.job.total_rows} rows in, ${res.job.duplicates_removed} duplicates removed`,
-        });
         if (res.unmapped_columns.length) {
           toast.info(`Ignored ${res.unmapped_columns.length} unknown column(s)`, {
             description: res.unmapped_columns.slice(0, 5).join(", "),
@@ -64,11 +63,12 @@ export default function ImportsPage() {
           </CardContent>
         </Card>
 
-        {active?.warnings.map((w) => (
-          <p key={w} className="text-sm text-muted-foreground">
-            {w}
-          </p>
-        ))}
+        {active && <JobProgress key={active.id} jobId={active.id} warnings={active.warnings} />}
+
+        <section>
+          <h2 className="mb-3 text-sm font-medium text-muted-foreground">Recent imports</h2>
+          <RecentImports />
+        </section>
       </div>
     </div>
   );
