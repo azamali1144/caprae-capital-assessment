@@ -1,7 +1,7 @@
 "use client";
 
 import type { RowSelectionState } from "@tanstack/react-table";
-import { SearchX, Upload, Users } from "lucide-react";
+import { Download, SearchX, Upload, Users } from "lucide-react";
 import Link from "next/link";
 import { Suspense, useState } from "react";
 
@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Button } from "@/components/ui/button";
+import { leadsApi } from "@/features/leads/api";
 import { BulkActionsBar } from "@/features/leads/components/bulk-actions-bar";
 import { LeadDrawer } from "@/features/leads/components/lead-drawer";
 import { LeadsFilters } from "@/features/leads/components/leads-filters";
@@ -73,6 +74,17 @@ function LeadsWorkspace() {
 
   return (
     <>
+      <div className="mb-2 flex justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={!data?.total}
+          nativeButton={false}
+          render={<a href={leadsApi.exportUrl(filters)} download />}
+        >
+          <Download /> Export {data?.total ? data.total.toLocaleString() : ""} to CSV
+        </Button>
+      </div>
       <LeadsFilters />
       {content}
       <LeadDrawer id={params.lead} onClose={() => setParams({ lead: null })} />

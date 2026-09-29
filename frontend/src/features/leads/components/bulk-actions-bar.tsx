@@ -1,13 +1,13 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Ban, CheckCheck, PhoneCall, RefreshCw, Trash2, X } from "lucide-react";
+import { Ban, CheckCheck, Download, PhoneCall, RefreshCw, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 
 import { leadsApi } from "../api";
-import { leadKeys } from "../hooks";
+import { leadKeys, useLeadFilters } from "../hooks";
 import type { BulkAction, Lead, Page, Stage } from "../types";
 
 type Props = {
@@ -17,6 +17,7 @@ type Props = {
 
 export function BulkActionsBar({ ids, onDone }: Props) {
   const qc = useQueryClient();
+  const filters = useLeadFilters();
 
   const bulk = useMutation({
     mutationFn: (body: BulkAction) => leadsApi.bulk(body),
@@ -81,6 +82,14 @@ export function BulkActionsBar({ ids, onDone }: Props) {
           onClick={() => bulk.mutate({ ids, action: "re_enrich" })}
         >
           <RefreshCw /> Re-enrich
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          nativeButton={false}
+          render={<a href={leadsApi.exportUrl(filters, ids)} download />}
+        >
+          <Download /> Export
         </Button>
         <Button
           size="sm"

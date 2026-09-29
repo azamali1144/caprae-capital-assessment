@@ -1,10 +1,11 @@
 from fastapi import APIRouter
 
-from app.api.v1 import health, icp_profiles, imports, leads, stats
+from app.api.v1 import exports, health, icp_profiles, imports, leads, stats
 
 api_router = APIRouter()
 api_router.include_router(health.router)
 api_router.include_router(imports.router)
 api_router.include_router(leads.router)
+api_router.include_router(exports.router)
 api_router.include_router(icp_profiles.router)
 api_router.include_router(stats.router)
