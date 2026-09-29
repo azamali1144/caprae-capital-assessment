@@ -29,6 +29,15 @@ async def _bump(job_id: uuid.UUID, processed: int = 0, failed: int = 0) -> None:
         await session.commit()
 
 
+async def _mark_timeout(company_id: uuid.UUID) -> None:
+    # so the ui shows "timeout" instead of a blank status
+    async with SessionLocal() as session:
+        await session.execute(
+            update(Company).where(Company.id == company_id).values(website_status="timeout")
+        )
+        await session.commit()
+
+
 async def process_company(company_id: uuid.UUID, icp: dict, force: bool = False) -> None:
     """enrich -> validate -> score for a single company, in its own session."""
     async with SessionLocal() as session:
@@ -69,12 +78,22 @@ async def run_import_job(job_id: uuid.UUID) -> None:
 
     async def worker(cid: uuid.UUID) -> None:
         async with sem:
+            t0 = time.perf_counter()
             try:
-                await process_company(cid, icp)
+                # hard cap so one tarpit site can't hold a slot forever
+                await asyncio.wait_for(process_company(cid, icp), settings.lead_timeout_seconds)
                 await _bump(job_id, processed=1)
+            except TimeoutError:
+                log.warning("company %s timed out after %.0fs", cid, settings.lead_timeout_seconds)
+                await _mark_timeout(cid)
+                await _bump(job_id, failed=1)
             except Exception as exc:  # one bad site shouldn't kill the whole import
                 log.warning("enrichment failed for company %s: %s", cid, exc)
                 await _bump(job_id, failed=1)
+            finally:
+                took = time.perf_counter() - t0
+                if took > 10:
+                    log.info("slow company %s: %.1fs", cid, took)
 
     try:
         await asyncio.gather(*(worker(cid) for cid in company_ids))

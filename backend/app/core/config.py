@@ -18,6 +18,8 @@ class Settings(BaseSettings):
 
     crawl_concurrency: int = 10
     crawl_timeout_seconds: float = 10.0
+    crawl_per_host_limit: int = 2
+    lead_timeout_seconds: float = 25.0
     crawl_user_agent: str = (
         "LeadLensBot/0.1 (+https://github.com/azamali1144/caprae-capital-assessment)"
     )

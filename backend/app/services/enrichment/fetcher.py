@@ -67,7 +67,9 @@ class Fetcher:
             limits=httpx.Limits(max_connections=50, max_keepalive_connections=20),
         )
         self.host_delay = HOST_DELAY_SECONDS if host_delay is None else host_delay
+        self.per_host_limit = s.crawl_per_host_limit
         self._host_locks: dict[str, asyncio.Lock] = {}
+        self._host_slots: dict[str, asyncio.Semaphore] = {}
         self._host_last_hit: dict[str, float] = {}
         self._robots: dict[str, RobotFileParser | None] = {}
 
@@ -125,8 +127,12 @@ class Fetcher:
     # --- fetching ---------------------------------------------------------
 
     async def _get_once(self, url: str) -> httpx.Response:
-        await self._wait_turn(urlsplit(url).netloc)
-        resp = await self.client.get(url)
+        host = urlsplit(url).netloc
+        # at most N requests in flight per host, on top of the global job concurrency
+        slots = self._host_slots.setdefault(host, asyncio.Semaphore(self.per_host_limit))
+        async with slots:
+            await self._wait_turn(host)
+            resp = await self.client.get(url)
         if resp.status_code == 429 or resp.status_code >= 500:
             raise _Retryable(f"http_{resp.status_code}")
         return resp
