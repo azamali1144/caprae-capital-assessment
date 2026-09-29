@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
@@ -29,10 +30,14 @@ def register_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error(_: Request, exc: RequestValidationError):
-        first = exc.errors()[0] if exc.errors() else {}
+        errors = exc.errors()
+        first = errors[0] if errors else {}
         where = ".".join(str(p) for p in first.get("loc", []) if p != "body")
-        msg = f"{where}: {first.get('msg', 'invalid input')}" if where else "Invalid input."
+        text = first.get("msg", "invalid input").removeprefix("Value error, ")
+        msg = f"{where}: {text}" if where else text
+        # custom validators stick the raw exception in ctx, which json can't handle
+        details = jsonable_encoder(errors, custom_encoder={Exception: str})
         return JSONResponse(
-            _body("VALIDATION_ERROR", msg, details=exc.errors()),
+            _body("VALIDATION_ERROR", msg, details=details),
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         )
