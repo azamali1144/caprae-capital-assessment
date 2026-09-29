@@ -4,21 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Briefcase, Target } from "lucide-react";
 import Link from "next/link";
 
+import type { IcpProfile } from "@/features/icp/types";
+import { apiGet } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
-
-type Profile = { id: string; name: string; mode: "sales" | "acquisition"; is_active: boolean };
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
 // shows which scoring lens is on - clicking it jumps to the icp settings
 export function ModePill() {
   const { data } = useQuery({
     queryKey: ["icp-profiles"],
-    queryFn: async (): Promise<Profile[]> => {
-      const res = await fetch(`${API}/icp-profiles`);
-      if (!res.ok) throw new Error("failed to load profiles");
-      return res.json();
-    },
+    queryFn: () => apiGet<IcpProfile[]>("/icp-profiles"),
   });
 
   const active = data?.find((p) => p.is_active);
