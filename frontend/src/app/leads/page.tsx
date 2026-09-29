@@ -9,13 +9,14 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Button } from "@/components/ui/button";
+import { LeadDrawer } from "@/features/leads/components/lead-drawer";
 import { LeadsFilters } from "@/features/leads/components/leads-filters";
 import { LeadsTable } from "@/features/leads/components/leads-table";
 import { useLeadFilters, useLeadSearchParams, useLeads } from "@/features/leads/hooks";
 
 function LeadsWorkspace() {
   const filters = useLeadFilters();
-  const [, setParams] = useLeadSearchParams();
+  const [params, setParams] = useLeadSearchParams();
   const { data, isLoading, isFetching, error } = useLeads(filters);
   const [selection, setSelection] = useState<RowSelectionState>({});
 
@@ -73,6 +74,7 @@ function LeadsWorkspace() {
     <>
       <LeadsFilters />
       {content}
+      <LeadDrawer id={params.lead} onClose={() => setParams({ lead: null })} />
     </>
   );
 }
@@ -82,7 +84,7 @@ export default function LeadsPage() {
     <div>
       <PageHeader
         title="Leads"
-        description="Step 2 of 3 - ranked by score. Hover a score to see why."
+        description="Step 2 of 3 - ranked by score. Click a row to see exactly why."
       />
       <Suspense fallback={<TableSkeleton />}>
         <LeadsWorkspace />
