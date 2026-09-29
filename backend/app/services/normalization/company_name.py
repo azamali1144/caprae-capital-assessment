@@ -24,6 +24,7 @@ SUFFIXES = {
     "bv",
 }
 
+_APOS_RE = re.compile("['\u2019]")
 _PUNCT_RE = re.compile(r"[^\w\s&]")
 _SPACE_RE = re.compile(r"\s+")
 
@@ -34,6 +35,7 @@ def normalize_company_name(name: str | None) -> str:
         return ""
     text = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
     text = text.lower().replace("&", " and ")
+    text = _APOS_RE.sub("", text)  # "joe's" -> "joes", not "joe s"
     text = _PUNCT_RE.sub(" ", text)
     text = _SPACE_RE.sub(" ", text).strip()
 
