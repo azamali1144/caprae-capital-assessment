@@ -1,7 +1,15 @@
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, CheckConstraint, ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    ForeignKey,
+    Index,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -36,6 +44,8 @@ class Contact(UUIDMixin, TimestampMixin, Base):
 
     __table_args__ = (
         UniqueConstraint("company_id", "email", name="uq_contacts_company_email"),
+        # backs the "has a verified email" filter on the leads list
+        Index("ix_contacts_company_status", "company_id", "email_status"),
         CheckConstraint(f"email_status IN {EMAIL_STATUSES}", name="email_status"),
         CheckConstraint("email_type IN ('personal', 'role')", name="email_type"),
     )

@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 from pydantic import BaseModel
 from sqlalchemy import text
 
@@ -49,7 +49,9 @@ class StatsOut(BaseModel):
 
 
 @router.get("/stats", response_model=StatsOut)
-async def get_stats(session: SessionDep):
+async def get_stats(session: SessionDep, response: Response):
+    # let the browser/cdn reuse it too, the numbers only move every few seconds anyway
+    response.headers["Cache-Control"] = f"public, max-age={STATS_TTL}"
     cached = await cache_get_json("stats:v1")
     if cached:
         return cached

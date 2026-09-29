@@ -70,7 +70,8 @@ class Company(UUIDMixin, TimestampMixin, Base):
         CheckConstraint(f"website_status IN {WEBSITE_STATUSES}", name="website_status"),
         CheckConstraint("grade IN ('A', 'B', 'C', 'D')", name="grade"),
         CheckConstraint("score BETWEEN 0 AND 100", name="score_range"),
-        Index("ix_companies_score", score.desc()),
+        # matches the default "score desc nulls last, id" ordering so paging uses the index
+        Index("ix_companies_score_id", score.desc().nulls_last(), "id"),
         Index("ix_companies_stage", "stage"),
         Index("ix_companies_country_industry", "country", "industry"),
         Index("ix_companies_import_job_id", "import_job_id"),
