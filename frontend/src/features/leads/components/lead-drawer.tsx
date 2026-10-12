@@ -233,7 +233,7 @@ export function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => 
 
   return (
     <Sheet open={!!id} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
+      <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2 pr-6">
             {lead?.name ?? (isLoading ? <Skeleton className="h-5 w-40" /> : "Lead")}
