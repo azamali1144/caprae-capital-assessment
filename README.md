@@ -79,7 +79,7 @@ Full model and the reasoning: [docs/scoring.md](docs/scoring.md)
 ## Architecture
 
 ```
-Next.js on Vercel ──REST──► FastAPI on Cloud Run ──► Postgres (Neon)
+Next.js on Cloud Run ──REST──► FastAPI on Cloud Run ──► Postgres (Neon)
                                    │                 Redis (Upstash)
                                    └──► company websites, DNS
 ```
@@ -92,7 +92,7 @@ Next.js on Vercel ──REST──► FastAPI on Cloud Run ──► Postgres (N
 | Data quality | tldextract, rapidfuzz, email-validator, dnspython, phonenumbers | |
 | Database | **PostgreSQL** (Neon serverless) | relational data + JSONB for flexible signals + GIN full-text search |
 | Cache | **Redis** (Upstash) | per-domain enrichment (7 d), MX (24 h), robots.txt (24 h), stats (30 s) |
-| Hosting | Vercel (static + SSR) and **GCP Cloud Run** (serverless container), GCP Secret Manager | scale to zero, container = same thing locally and in prod |
+| Hosting | **GCP Cloud Run** for both - Next.js standalone container + FastAPI container; Artifact Registry, Secret Manager | one cloud, scale to zero, container = same thing locally and in prod |
 | CI | GitHub Actions - ruff, pytest against real Postgres/Redis, eslint, `tsc`, `next build` | |
 
 Details, ADRs and performance notes: [docs/architecture.md](docs/architecture.md) ·
@@ -110,10 +110,9 @@ Deploy guide: [docs/deployment.md](docs/deployment.md)
 
 ### Deployment process
 
-1. PR → GitHub Actions (lint, type-check, tests, build) + Vercel preview.
-2. Merge to `main` → Actions builds the API image, pushes to Artifact Registry,
-   deploys to Cloud Run (migrations run on boot).
-3. Vercel deploys the frontend from `main`.
+1. PR → GitHub Actions (lint, type-check, tests, build).
+2. Merge to `main` → Actions builds the API and web images, pushes them to
+   Artifact Registry and deploys both to Cloud Run (API migrations run on boot).
 
 ## UX decisions
 

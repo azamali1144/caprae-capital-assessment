@@ -2,12 +2,12 @@
 
 ```
 ┌──────────────────────────────┐
-│  Next.js 16 (App Router)     │  Vercel - static shell + client data fetching
+│  Next.js 16 (App Router)     │  Cloud Run - standalone node container
 │  shadcn/ui · TanStack Query  │
 └──────────────┬───────────────┘
                │ REST / JSON  (/api/v1)
 ┌──────────────▼───────────────┐
-│  FastAPI                     │  Cloud Run - one container
+│  FastAPI                     │  Cloud Run - second container
 │  routers → services → repos  │
 │  BackgroundTasks for jobs    │
 └──┬───────────┬───────────┬───┘
